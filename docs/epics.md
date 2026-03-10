@@ -87,6 +87,7 @@ _Parse, validate, and manage the `prd.json` product spec and task lifecycle._
 - Given a task in `prd.json`, when parsed, then it has: `id`, `title`, `description`, `acceptance_criteria[]`, `status`, `dependencies[]`
 - Given `status`, when read, then it is one of: `pending`, `in_progress`, `done`, `failed`, `blocked`
 - Given an invalid `prd.json` (missing required fields), when parsed, then a `SpecValidationError` is raised with details about what's wrong
+- Given `deploy_target` is absent from `prd.json`, when parsed, then it defaults to `null` (no deployment config generated)
 
 **Architecture:** `agent_loops/spec.py`, `agent_loops/models.py` per Section 4.2
 **Dependencies:** S1.2
@@ -320,6 +321,7 @@ _Implement the main orchestration loop, prompt construction, and Agent SDK integ
 - Given an iteration fails, when the iteration ends, then: task remains `pending`, progress entry with `status: "failed"` is written, uncommitted changes are discarded
 - Given max iterations or budget exceeded or kill switch or all tasks done, when the termination condition is met, then the loop exits and returns `LoopResult` with summary
 - Given the loop completes, when `LoopResult` is returned, then it contains: `iterations_completed`, `tasks_done`, `total_cost_usd`, `exit_reason`
+- Given the success rate over the last 10 iterations drops below 40%, when checked at iteration boundaries, then a warning is logged to stderr
 - Given 5 consecutive API errors, when the retry threshold is exceeded, then the loop pauses with `exit_reason: "api_errors"`
 
 **Architecture:** `agent_loops/engine.py` per Section 3.2, integrates all other components

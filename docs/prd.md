@@ -136,7 +136,7 @@ The research identifies 6 phases mapped to 5 product modules and 1 cross-cutting
 **Priority:** Must-Have
 **Description:** The system shall define a structured JSON format for product specs that agents can read and update.
 **Acceptance Criteria:**
-- Given a `prd.json` file, when parsed, then each task has: `id`, `title`, `description`, `acceptance_criteria`, `status` (pending/in_progress/done/failed), `dependencies` (list of task IDs)
+- Given a `prd.json` file, when parsed, then each task has: `id`, `title`, `description`, `acceptance_criteria`, `status` (pending/in_progress/done/failed/blocked), `dependencies` (list of task IDs)
 - Given a task has unmet dependencies, when an agent selects the next task, then it skips that task and selects one with all dependencies met
 - Given a task is marked `done`, when an agent reads the spec, then it does not reattempt that task
 
