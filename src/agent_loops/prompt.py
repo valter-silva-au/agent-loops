@@ -16,7 +16,14 @@ class PromptBuilder:
         self.project_dir = Path(project_dir)
         self.state = state
 
-    def build(self, task: Task, iteration: int, test_command: str) -> str:
+    def build(
+        self,
+        task: Task,
+        iteration: int,
+        test_command: str,
+        is_final: bool = False,
+        deploy_target: str | None = None,
+    ) -> str:
         sections = [
             self._role_section(),
             self._task_section(task),
@@ -25,6 +32,8 @@ class PromptBuilder:
             self._git_section(),
             self._iteration_section(iteration),
         ]
+        if is_final:
+            sections.append(self._finalization_section(test_command, deploy_target))
         return "\n\n".join(sections)
 
     def _role_section(self) -> str:
@@ -96,3 +105,20 @@ Only commit if tests pass."""
 
     def _iteration_section(self, iteration: int) -> str:
         return f"## Iteration\n\nThis is iteration #{iteration}."
+
+    def _finalization_section(self, test_command: str, deploy_target: str | None) -> str:
+        """Additional instructions for the final iteration when all tasks are nearly done."""
+        parts = [
+            "## Finalization",
+            "",
+            "All tasks are nearly complete. After finishing the current task:",
+            "",
+            f"1. Generate `.github/workflows/ci.yml` that runs `{test_command}` on push to main.",
+        ]
+        if deploy_target == "docker":
+            parts.append("2. Generate a `Dockerfile` for the project.")
+        elif deploy_target == "vercel":
+            parts.append("2. Generate a `vercel.json` deployment configuration.")
+        parts.append("")
+        parts.append("Commit these infrastructure files alongside your task changes.")
+        return "\n".join(parts)

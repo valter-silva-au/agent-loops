@@ -101,7 +101,13 @@ class LoopEngine:
                 self._check_success_rate(progress)
 
                 # Build prompt and run agent
-                prompt = self.prompt_builder.build(task, iteration, spec.test_command)
+                # Check if this is the last pending task (trigger finalization)
+                pending_count = sum(1 for t in spec.tasks if t.status == TaskStatus.PENDING)
+                is_final = pending_count == 1
+                prompt = self.prompt_builder.build(
+                    task, iteration, spec.test_command,
+                    is_final=is_final, deploy_target=spec.deploy_target,
+                )
 
                 print(f"[Iteration {iteration}] Working on {task.id}: {task.title}", file=sys.stderr)
 

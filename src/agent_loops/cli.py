@@ -111,8 +111,16 @@ def init(from_path: str | None) -> None:
     """Generate a template prd.json."""
     if from_path:
         click.echo(f"Generating prd.json from {from_path}")
-        # TODO: Parse markdown into tasks (S7.3)
-        click.echo("Markdown parsing not yet implemented. Use interactive mode instead.")
+        from .markdown_parser import parse_prd_markdown
+        content = Path(from_path).read_text()
+        spec = parse_prd_markdown(content)
+        if not spec["tasks"]:
+            click.echo("No functional requirements (FR-XXX) found in the markdown.", err=True)
+            sys.exit(1)
+        output = Path("prd.json")
+        output.write_text(json.dumps(spec, indent=2) + "\n")
+        click.echo(f"Created {output} with {len(spec['tasks'])} tasks")
+        return
     else:
         name = click.prompt("Project name")
         test_command = click.prompt("Test command", default="pytest")
