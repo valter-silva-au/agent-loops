@@ -1,0 +1,55 @@
+{
+  "name": "hello-world-app",
+  "test_command": "python -m pytest",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Initialize Python project",
+      "description": "Create a pyproject.toml with project metadata, a src/hello/ package with __init__.py, and a tests/ directory with conftest.py. Use pytest as the test framework.",
+      "acceptance_criteria": [
+        "pyproject.toml exists with name='hello-world-app'",
+        "src/hello/__init__.py exists",
+        "tests/conftest.py exists",
+        "python -m pytest runs with 0 errors"
+      ],
+      "status": "pending",
+      "dependencies": []
+    },
+    {
+      "id": "TASK-002",
+      "title": "Create greeting function",
+      "description": "Create src/hello/greet.py with a greet(name: str) -> str function that returns 'Hello, {name}!'",
+      "acceptance_criteria": [
+        "src/hello/greet.py exists",
+        "greet('World') returns 'Hello, World!'",
+        "greet('') raises ValueError"
+      ],
+      "status": "pending",
+      "dependencies": ["TASK-001"]
+    },
+    {
+      "id": "TASK-003",
+      "title": "Add tests for greeting",
+      "description": "Create tests/test_greet.py with unit tests covering the greet function: valid input, empty string, special characters.",
+      "acceptance_criteria": [
+        "tests/test_greet.py exists",
+        "At least 3 test cases",
+        "All tests pass with python -m pytest"
+      ],
+      "status": "pending",
+      "dependencies": ["TASK-002"]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Add CLI entry point",
+      "description": "Create src/hello/cli.py with a Click CLI that takes --name and prints the greeting. Register it in pyproject.toml as 'hello' console script.",
+      "acceptance_criteria": [
+        "src/hello/cli.py exists",
+        "pyproject.toml has [project.scripts] hello entry",
+        "Running 'hello --name World' prints 'Hello, World!'"
+      ],
+      "status": "pending",
+      "dependencies": ["TASK-002"]
+    }
+  ]
+}
