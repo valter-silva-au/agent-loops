@@ -87,6 +87,7 @@ class StateManager:
 
     def _append_jsonl(self, path: Path, data: dict) -> None:
         """Append a single JSON line. Append-only is crash-safe (partial last line is skipped on read)."""
+        path.parent.mkdir(parents=True, exist_ok=True)
         line = json.dumps(data) + "\n"
         with open(path, "a") as f:
             f.write(line)
