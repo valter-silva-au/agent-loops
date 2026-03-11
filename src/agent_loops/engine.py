@@ -53,6 +53,7 @@ class LoopEngine:
 
         runner_config = RunnerConfig(
             model=self.config.model,
+            provider=self.config.provider,
             max_turns=self.config.max_turns_per_iteration,
             per_iteration_budget_usd=min(5.0, self.budget_tracker.remaining),
             project_dir=self.config.project_dir,

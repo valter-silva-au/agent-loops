@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
 
-from .models import IterationResult
+from .models import IterationResult, Provider
 
 
 @dataclass
 class RunnerConfig:
-    model: str = "claude-sonnet-4-6"
+    model: str = ""
+    provider: Provider = Provider.BEDROCK
     max_turns: int = 50
     per_iteration_budget_usd: float = 5.0
     project_dir: Path = Path(".")
@@ -33,6 +34,25 @@ class AgentRunner:
         self.pre_hooks = pre_hooks or []
         self.post_hooks = post_hooks or []
 
+    def _build_env(self) -> dict[str, str] | None:
+        """Build environment variables for the Agent SDK session."""
+        if self.config.provider == Provider.BEDROCK:
+            env: dict[str, str] = {"CLAUDE_CODE_USE_BEDROCK": "1"}
+            # Forward AWS credentials from current environment
+            for key in (
+                "AWS_ACCESS_KEY_ID",
+                "AWS_SECRET_ACCESS_KEY",
+                "AWS_SESSION_TOKEN",
+                "AWS_REGION",
+                "AWS_PROFILE",
+                "AWS_BEARER_TOKEN_BEDROCK",
+            ):
+                val = os.environ.get(key)
+                if val:
+                    env[key] = val
+            return env
+        return None
+
     async def run_iteration(self, prompt: str) -> IterationResult:
         """Run a single agent iteration via the Claude Agent SDK."""
         try:
@@ -47,6 +67,8 @@ class AgentRunner:
         if self.post_hooks:
             hooks["PostToolUse"] = [HookMatcher(hooks=self.post_hooks)]
 
+        env = self._build_env()
+
         options = ClaudeAgentOptions(
             allowed_tools=self.ALLOWED_TOOLS,
             system_prompt=self.SYSTEM_PROMPT,
@@ -56,6 +78,7 @@ class AgentRunner:
             max_turns=self.config.max_turns,
             max_budget_usd=self.config.per_iteration_budget_usd,
             hooks=hooks if hooks else None,
+            env=env,
         )
 
         total_cost = 0.0

@@ -27,6 +27,11 @@ class GutterStatus(str, Enum):
     BLOCKED = "blocked"
 
 
+class Provider(str, Enum):
+    BEDROCK = "bedrock"
+    ANTHROPIC = "anthropic"
+
+
 @dataclass
 class Task:
     id: str
@@ -45,18 +50,40 @@ class Task:
             self.status = TaskStatus(self.status)
 
 
+BEDROCK_MODELS = {
+    "sonnet": "us.anthropic.claude-sonnet-4-6-v1",
+    "opus": "us.anthropic.claude-opus-4-6-v1",
+    "haiku": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+}
+
+ANTHROPIC_MODELS = {
+    "sonnet": "claude-sonnet-4-6",
+    "opus": "claude-opus-4-6",
+    "haiku": "claude-haiku-4-5-20251001",
+}
+
+DEFAULT_MODEL = BEDROCK_MODELS["sonnet"]
+DEFAULT_PROVIDER = Provider.BEDROCK
+
+
 @dataclass
 class LoopConfig:
     prd_path: Path
     project_dir: Path
     max_iterations: int = 100
     budget_usd: float = 50.0
-    model: str = "claude-sonnet-4-6"
+    model: str = ""
+    provider: Provider = DEFAULT_PROVIDER
     max_turns_per_iteration: int = 50
 
     def __post_init__(self) -> None:
         self.prd_path = Path(self.prd_path)
         self.project_dir = Path(self.project_dir)
+        if isinstance(self.provider, str):
+            self.provider = Provider(self.provider)
+        if not self.model:
+            models = BEDROCK_MODELS if self.provider == Provider.BEDROCK else ANTHROPIC_MODELS
+            self.model = models["sonnet"]
         if self.max_iterations < 1:
             raise ValueError("max_iterations must be >= 1")
         if self.budget_usd <= 0:

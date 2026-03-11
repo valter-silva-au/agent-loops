@@ -10,7 +10,7 @@ from pathlib import Path
 import click
 
 from .engine import LoopEngine
-from .models import LoopConfig
+from .models import ANTHROPIC_MODELS, BEDROCK_MODELS, LoopConfig, Provider
 from .spec import SpecParser, SpecValidationError
 from .state import StateManager
 
@@ -26,18 +26,21 @@ def cli() -> None:
 @click.option("--dir", "project_dir", default=".", type=click.Path(exists=True), help="Target project directory")
 @click.option("--max-iterations", default=100, type=int, help="Maximum loop iterations")
 @click.option("--budget", default=50.0, type=float, help="Budget cap in USD")
-@click.option("--model", default="claude-sonnet-4-6", help="Claude model to use")
-def run(prd: str, project_dir: str, max_iterations: int, budget: float, model: str) -> None:
+@click.option("--provider", type=click.Choice(["bedrock", "anthropic"]), default="bedrock", help="API provider (default: bedrock)")
+@click.option("--model", default="", help="Model ID (auto-detected from provider if omitted)")
+def run(prd: str, project_dir: str, max_iterations: int, budget: float, provider: str, model: str) -> None:
     """Start the autonomous build loop."""
     config = LoopConfig(
         prd_path=Path(prd),
         project_dir=Path(project_dir),
         max_iterations=max_iterations,
         budget_usd=budget,
+        provider=Provider(provider),
         model=model,
     )
 
     click.echo(f"Starting agent-loops: {config.prd_path}")
+    click.echo(f"  provider: {config.provider.value}")
     click.echo(f"  project: {config.project_dir}")
     click.echo(f"  max_iterations: {config.max_iterations}")
     click.echo(f"  budget: ${config.budget_usd:.2f}")

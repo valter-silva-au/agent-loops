@@ -3,6 +3,8 @@
 import pytest
 
 from agent_loops.models import (
+    ANTHROPIC_MODELS,
+    BEDROCK_MODELS,
     BudgetEntry,
     BudgetStatus,
     GutterStatus,
@@ -10,6 +12,7 @@ from agent_loops.models import (
     LoopConfig,
     LoopResult,
     ProgressEntry,
+    Provider,
     Task,
     TaskStatus,
 )
@@ -56,6 +59,26 @@ class TestLoopConfig:
         assert config.max_iterations == 100
         assert config.budget_usd == 50.0
         assert isinstance(config.prd_path, Path)
+
+    def test_default_provider_is_bedrock(self):
+        config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project")
+        assert config.provider == Provider.BEDROCK
+
+    def test_default_model_bedrock(self):
+        config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project")
+        assert config.model == BEDROCK_MODELS["sonnet"]
+
+    def test_default_model_anthropic(self):
+        config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project", provider="anthropic")
+        assert config.model == ANTHROPIC_MODELS["sonnet"]
+
+    def test_explicit_model_preserved(self):
+        config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project", model="us.anthropic.claude-opus-4-6-v1")
+        assert config.model == "us.anthropic.claude-opus-4-6-v1"
+
+    def test_provider_string_coercion(self):
+        config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project", provider="anthropic")
+        assert config.provider == Provider.ANTHROPIC
 
     def test_invalid_max_iterations(self):
         with pytest.raises(ValueError, match="max_iterations"):

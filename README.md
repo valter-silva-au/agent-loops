@@ -23,8 +23,14 @@ git clone https://github.com/valter-silva-au/agent-loops.git
 cd agent-loops
 pip install -e ".[dev]"
 
-# Set your API key
-export ANTHROPIC_API_KEY=sk-ant-...
+# Set up credentials (Bedrock is the default provider)
+# Option A: AWS Bedrock (default)
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_REGION=us-west-2
+
+# Option B: Direct Anthropic API
+# export ANTHROPIC_API_KEY=sk-ant-...
 
 # Create a project directory
 mkdir my-app && cd my-app && git init && git commit --allow-empty -m "init"
@@ -40,8 +46,14 @@ agent-loops run --prd prd.json --max-iterations 20 --budget 10.0
 ## CLI Commands
 
 ```bash
-# Start the autonomous build loop
-agent-loops run --prd spec.json --dir ./project --max-iterations 50 --budget 30.0 --model claude-sonnet-4-6
+# Start with AWS Bedrock (default)
+agent-loops run --prd spec.json --dir ./project --max-iterations 50 --budget 30.0
+
+# Start with direct Anthropic API
+agent-loops run --prd spec.json --provider anthropic
+
+# Use a specific model
+agent-loops run --prd spec.json --model us.anthropic.claude-opus-4-6-v1
 
 # Check progress of a running or completed loop
 agent-loops status --dir ./project
