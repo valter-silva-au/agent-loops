@@ -34,10 +34,13 @@ class AgentRunner:
         self.pre_hooks = pre_hooks or []
         self.post_hooks = post_hooks or []
 
-    def _build_env(self) -> dict[str, str] | None:
+    def _build_env(self) -> dict[str, str]:
         """Build environment variables for the Agent SDK session."""
+        # Prevent nested session detection when running inside Claude Code
+        env: dict[str, str] = {"CLAUDECODE": ""}
+
         if self.config.provider == Provider.BEDROCK:
-            env: dict[str, str] = {"CLAUDE_CODE_USE_BEDROCK": "1"}
+            env["CLAUDE_CODE_USE_BEDROCK"] = "1"
             # Forward AWS credentials from current environment
             for key in (
                 "AWS_ACCESS_KEY_ID",
@@ -50,8 +53,7 @@ class AgentRunner:
                 val = os.environ.get(key)
                 if val:
                     env[key] = val
-            return env
-        return None
+        return env
 
     async def run_iteration(self, prompt: str) -> IterationResult:
         """Run a single agent iteration via the Claude Agent SDK."""
@@ -67,8 +69,6 @@ class AgentRunner:
         if self.post_hooks:
             hooks["PostToolUse"] = [HookMatcher(hooks=self.post_hooks)]
 
-        env = self._build_env()
-
         options = ClaudeAgentOptions(
             allowed_tools=self.ALLOWED_TOOLS,
             system_prompt=self.SYSTEM_PROMPT,
@@ -78,7 +78,7 @@ class AgentRunner:
             max_turns=self.config.max_turns,
             max_budget_usd=self.config.per_iteration_budget_usd,
             hooks=hooks if hooks else None,
-            env=env,
+            env=self._build_env(),
         )
 
         total_cost = 0.0

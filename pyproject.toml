@@ -32,6 +32,7 @@ packages = ["src/agent_loops"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "-m 'not e2e'"
 markers = [
-    "e2e: end-to-end tests requiring ANTHROPIC_API_KEY",
+    "e2e: end-to-end tests requiring API credentials (run with: pytest -m e2e)",
 ]
