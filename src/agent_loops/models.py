@@ -51,13 +51,13 @@ class Task:
 
 
 BEDROCK_MODELS = {
-    "sonnet": "us.anthropic.claude-sonnet-4-6-v1",
+    "sonnet": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
     "opus": "us.anthropic.claude-opus-4-6-v1",
     "haiku": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
 }
 
 ANTHROPIC_MODELS = {
-    "sonnet": "claude-sonnet-4-6",
+    "sonnet": "claude-sonnet-4-5-20250929",
     "opus": "claude-opus-4-6",
     "haiku": "claude-haiku-4-5-20251001",
 }

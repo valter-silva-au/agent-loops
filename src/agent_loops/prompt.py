@@ -48,7 +48,7 @@ You are a software engineer working on a project. Your job is to complete exactl
 4. If tests pass, commit your changes with a message referencing the task ID.
 5. If tests fail, read the error output and fix the issue. You may retry up to 3 times.
 6. If you cannot fix after 3 attempts, discard all changes (git checkout .) and report the failure.
-7. Before exiting, update prd.json to mark your task status.
+7. Before exiting, update prd.json to mark your task status to "done" (valid values: pending, in_progress, done, failed, blocked).
 8. Do NOT modify files outside the project directory.
 9. Do NOT use git push, git rebase, or git reset --hard.
 10. Write clean, secure code. Avoid common vulnerabilities (SQL injection, XSS, etc.)."""

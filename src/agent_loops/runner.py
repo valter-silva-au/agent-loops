@@ -86,7 +86,7 @@ class AgentRunner:
         output_tokens = 0
         tool_calls = 0
         error: str | None = None
-        success = False
+        got_result = False
 
         try:
             async for message in query(prompt=prompt, options=options):
@@ -97,10 +97,14 @@ class AgentRunner:
                         input_tokens = message.total_input_tokens or 0
                     if hasattr(message, "total_output_tokens"):
                         output_tokens = message.total_output_tokens or 0
-                    success = True
+                    got_result = True
         except Exception as e:
-            error = str(e)
-            success = False
+            # The SDK may throw after yielding ResultMessage (process cleanup).
+            # If we already got a result with cost, the agent DID run successfully.
+            if not got_result:
+                error = str(e)
+
+        success = got_result
 
         return IterationResult(
             success=success,

@@ -67,10 +67,12 @@ class TestLoopConfig:
     def test_default_model_bedrock(self):
         config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project")
         assert config.model == BEDROCK_MODELS["sonnet"]
+        assert "us.anthropic" in config.model
 
     def test_default_model_anthropic(self):
         config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project", provider="anthropic")
         assert config.model == ANTHROPIC_MODELS["sonnet"]
+        assert "us.anthropic" not in config.model
 
     def test_explicit_model_preserved(self):
         config = LoopConfig(prd_path="prd.json", project_dir="/tmp/project", model="us.anthropic.claude-opus-4-6-v1")
