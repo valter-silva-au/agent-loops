@@ -29,11 +29,19 @@ pytest -v
 
 ## Key Decisions
 
+- AWS Bedrock as default provider (`--provider bedrock`); Anthropic direct API as option (`--provider anthropic`)
 - Claude Agent SDK (not CLI subprocess) for programmatic hook control
 - JSONL for progress/budget logs (append-only, crash-safe)
 - Fresh `query()` per iteration (no persistent sessions)
 - Safety enforced via PreToolUse/PostToolUse hooks
 - Atomic file writes via `os.replace()`
+
+## Provider Configuration
+
+- Default: Bedrock (`us.anthropic.claude-sonnet-4-6-v1`). Requires `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`.
+- Alternative: Anthropic (`claude-sonnet-4-6`). Requires `ANTHROPIC_API_KEY`.
+- Runner passes `CLAUDE_CODE_USE_BEDROCK=1` + AWS creds to the Agent SDK via `env` param.
+- Model lookup tables in `models.py`: `BEDROCK_MODELS`, `ANTHROPIC_MODELS`.
 
 ## Planning Docs
 
