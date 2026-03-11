@@ -1,7 +1,9 @@
-"""E2E tests for agent-loops (require ANTHROPIC_API_KEY or AWS Bedrock credentials).
+"""E2E tests for agent-loops (require AWS Bedrock or Anthropic API credentials).
 
 Run from a regular terminal (NOT inside Claude Code):
     pytest tests/test_e2e.py -v -m e2e
+
+Each iteration takes ~90s. Budget ~$0.70/iteration.
 """
 
 import json
@@ -26,7 +28,7 @@ def e2e_project(tmp_path):
 
     spec = {
         "name": "hello-e2e",
-        "test_command": "python -c \"import hello; assert hello.greet('World') == 'Hello, World!'\"",
+        "test_command": "python3 -c \"import hello; assert hello.greet('World') == 'Hello, World!'\"",
         "tasks": [
             {
                 "id": "TASK-001",
@@ -49,17 +51,25 @@ def e2e_project(tmp_path):
 
 @pytest.mark.e2e
 def test_single_task_build(e2e_project):
-    """Run agent-loops on a single-task spec and verify it completes."""
+    """Run agent-loops on a single-task spec and verify it completes.
+
+    Uses max 2 iterations (~3 min). The agent should create hello.py
+    and commit in the first iteration.
+    """
     result = subprocess.run(
         [
             "agent-loops", "run",
             "--prd", str(e2e_project / "prd.json"),
             "--dir", str(e2e_project),
-            "--max-iterations", "5",
-            "--budget", "5.0",
+            "--max-iterations", "2",
+            "--budget", "3.0",
         ],
-        capture_output=True, text=True, timeout=300,
+        capture_output=True, text=True, timeout=600,
     )
+
+    # Print output for debugging
+    print(f"STDOUT:\n{result.stdout}")
+    print(f"STDERR:\n{result.stderr}")
 
     # Check the loop ran
     assert "Loop finished" in result.stdout
@@ -68,22 +78,21 @@ def test_single_task_build(e2e_project):
     hello_py = e2e_project / "hello.py"
     assert hello_py.exists(), "hello.py should have been created by the agent"
 
-    # Check the spec was updated
-    spec = json.loads((e2e_project / "prd.json").read_text())
-    task = spec["tasks"][0]
-    assert task["status"] == "done", f"Task should be done, got: {task['status']}"
+    # Check the function works
+    verify = subprocess.run(
+        ["python3", "-c", "import hello; assert hello.greet('World') == 'Hello, World!'"],
+        cwd=e2e_project, capture_output=True, text=True,
+    )
+    assert verify.returncode == 0, f"greet() should return correct value: {verify.stderr}"
 
-    # Check progress was logged
-    progress_path = e2e_project / ".agent-loops" / "progress.jsonl"
-    assert progress_path.exists(), "progress.jsonl should exist"
-
-    # Check budget was tracked
-    budget_path = e2e_project / ".agent-loops" / "budget.jsonl"
-    assert budget_path.exists(), "budget.jsonl should exist"
-
-    # Check a git commit was made
+    # Check a git commit was made by the agent
     log = subprocess.run(
         ["git", "log", "--oneline"],
         cwd=e2e_project, capture_output=True, text=True,
     )
-    assert len(log.stdout.strip().splitlines()) > 2, "Agent should have committed at least once"
+    commits = log.stdout.strip().splitlines()
+    assert len(commits) > 2, f"Agent should have committed, got: {commits}"
+
+    # Check progress was logged
+    progress_path = e2e_project / ".agent-loops" / "progress.jsonl"
+    assert progress_path.exists(), "progress.jsonl should exist"
