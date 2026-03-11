@@ -18,6 +18,8 @@ def engine_project(tmp_path):
     project = tmp_path / "project"
     project.mkdir()
     subprocess.run(["git", "init"], cwd=project, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=project, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@test.com"], cwd=project, check=True, capture_output=True)
     subprocess.run(
         ["git", "commit", "--allow-empty", "-m", "initial"],
         cwd=project, check=True, capture_output=True,
@@ -127,6 +129,8 @@ class TestLoopExecution:
         project = tmp_path / "many-tasks"
         project.mkdir()
         subprocess.run(["git", "init"], cwd=project, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=project, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@test.com"], cwd=project, check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "--allow-empty", "-m", "initial"],
             cwd=project, check=True, capture_output=True,
