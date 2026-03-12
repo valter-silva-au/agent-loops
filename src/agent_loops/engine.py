@@ -65,6 +65,13 @@ class LoopEngine:
 
         try:
             for iteration in range(1, self.config.max_iterations + 1):
+                # Reload spec from disk each iteration to pick up agent's changes
+                try:
+                    spec_data = self.state.read_spec()
+                    spec = SpecParser(spec_data)
+                except Exception:
+                    pass  # keep previous spec if reload fails
+
                 # Check termination conditions
                 if self.kill_switch.check():
                     exit_reason = "kill_switch"
